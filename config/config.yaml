@@ -1,0 +1,5 @@
+slack_token: SLACK_BOT_TOKEN
+bot_name: talkingbop
+graph_urls:
+  hacktoberfest: https://hacktoberfest.digitalocean.com
+  google: https://www.google.com
