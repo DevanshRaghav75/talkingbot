@@ -1,0 +1,5 @@
+docopt
+pykafka
+pyyaml
+requests
+slackclient
