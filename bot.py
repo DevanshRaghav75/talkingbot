@@ -191,7 +191,7 @@ class SlackBot(object):
 def random_number(size=10):
     _temp = ""
     for x in range(size):
-        _temp = _temp + str(random.randint(0,9))
+        _temp = _temp + str(random.randint(100,999))
     return _temp
 
 def prepare_dir(dir_name):
