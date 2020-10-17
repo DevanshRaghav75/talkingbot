@@ -150,7 +150,7 @@ class SlackBot(object):
             print("Please set the environment variable puppetron")
             sys.exit(1)
 
-        files1 = prepare_dir(dir_name)
+        existing_files = prepare_dir(dir_name)
 
         dfile = random_number() + ".jpg"
         # print("Getting file")
@@ -170,8 +170,8 @@ class SlackBot(object):
         # Poll for new files
         while True:
             time.sleep(.5)
-            files2 = os.listdir(dir_name)
-            new = [f for f in files2 if all([f not in files1, f.endswith(".jpg")])]
+            new_files = os.listdir(dir_name)
+            new = [f for f in new_files if all([f not in existing_files, f.endswith(".jpg")])]
             # print("uploading files")
             for f in new:
                 with open(f, 'rb') as in_file:
@@ -196,8 +196,8 @@ def random_number(size=10):
 
 def prepare_dir(dir_name):
     # Check for any images from a previous run and remove them
-    files1 = os.listdir(dir_name)
-    for item in files1:
+    files_in_dir = os.listdir(dir_name)
+    for item in files_in_dir:
         if item.endswith(".jpg"):
             os.remove(os.path.join(dir_name, item))
     return os.listdir(dir_name)
