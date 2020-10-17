@@ -1,22 +1,6 @@
-"""
-
-Usage:
-    slackbot [options]
-
-Options:
-    --config-file=<file>        Config file path.
-"""
-import io
-import os
-import sys
-import time
-import random
-
-import yaml
+import io, os, sys, time, random, yaml, requests
 from docopt import docopt
 from slackclient import SlackClient
-
-import requests
 from urllib.parse import unquote
 
 class SlackBot(object):
@@ -26,7 +10,6 @@ class SlackBot(object):
         self.token = self.config.get('slack_token')
         self.slack_client = SlackClient(self.token)
         self.bot_id = self.get_bot_id()
-
         self.respond_to = ['list',
                            'graph <name>',
                            'custom <url>']
@@ -34,8 +17,6 @@ class SlackBot(object):
         for answer in self.respond_to:
             self.help_msg += f'{answer}\n'
         self.help_msg += '```'
-
-        # This is a set of predefined shortcuts for commonly used graphs
         self.graph_urls = {}
         self.puppetron = self.config.get('puppetron')
         self.graph_shortcuts = '```\n'
@@ -52,7 +33,6 @@ class SlackBot(object):
             for user in users:
                 if 'name' in user and user.get('name') == self.config.get('bot_name'):
                     return "<@" + user.get('id') + ">"
-
             return None
 
     def start(self):
@@ -62,29 +42,20 @@ class SlackBot(object):
                 events = self.slack_client.rtm_read()
                 for event in events:
                     if event.get('type') == 'message':
-                        # If we received a message, read it and respond if necessary
                         self.on_message(event)
-
                 time.sleep(1)
         else:
             print('Connection failed, invalid token?')
             sys.exit(1)
 
     def on_message(self, event):
-        # Ignore edits and uploads
         subtype = event.get('subtype', '')
         if subtype == u'message_changed' or subtype == u'file_share':
             return
-
-        # Don't respond to messages sent by the bot itself
         if event.get('user', '') == self.bot_id:
             return
-
         full_text = event.get('text', '') or ''
-
-        # Only respond to messages addressed directly to the bot
         if full_text.startswith(self.bot_id):
-            # Strip off the bot id and parse the rest of the message as the question
             question = full_text[len(self.bot_id):]
             if len(question) > 0:
                 question = question.strip().lower()
@@ -141,15 +112,10 @@ class SlackBot(object):
 
 
     def generate_and_upload_graph(self, filename, url, channel):
-        # Create the graph in the current directory
         dir_name = os.path.dirname(os.path.abspath(__file__))
-
         puppetron = self.puppetron
-
         existing_files = prepare_dir(dir_name)
-
         dfile = random_number() + ".jpg"
-        # print("Getting file")
         r = requests.get(puppetron + url, stream=True)
         if r.status_code == 200:
             with open(dfile, 'wb') as f:
@@ -162,8 +128,7 @@ class SlackBot(object):
                 text='Error getting the image. Try yourself at ' + puppetron + url ,
                 as_user='true:')
             return
-        # print("reading files")
-        # Poll for new files
+
         while True:
             time.sleep(.5)
             new_files = os.listdir(dir_name)
@@ -181,7 +146,6 @@ class SlackBot(object):
                         print('File upload failed %s', ret['error'])
                 os.remove(f)
             break
-        # print("end of generate_and_upload_graph")
 
 
 def random_number(size=10):
@@ -191,23 +155,18 @@ def random_number(size=10):
     return _temp
 
 def prepare_dir(dir_name):
-    # Check for any images from a previous run and remove them
     files_in_dir = os.listdir(dir_name)
     for item in files_in_dir:
         if item.endswith(".jpg"):
             os.remove(os.path.join(dir_name, item))
     return os.listdir(dir_name)
 
-
 def configure(filename):
     if os.path.exists(filename) is False:
         raise IOError("{0} does not exist".format(filename))
-
     with open(filename) as config_file:
         config_data = yaml.load(config_file)
-
     return config_data
-
 
 def main(arguments=None):
     if not arguments:
@@ -215,7 +174,6 @@ def main(arguments=None):
     config = configure(arguments['--config-file'])
     mybot = SlackBot(config)
     mybot.start()
-
 
 if __name__ == "__main__":
     main()
