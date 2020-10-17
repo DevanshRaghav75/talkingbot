@@ -1,5 +1,6 @@
 slack_token: SLACK_BOT_TOKEN
 bot_name: talkingbop
+puppetron: http://127.0.0.1:8080/screenshot/
 graph_urls:
   hacktoberfest: https://hacktoberfest.digitalocean.com
   google: https://www.google.com

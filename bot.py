@@ -37,6 +37,7 @@ class SlackBot(object):
 
         # This is a set of predefined shortcuts for commonly used graphs
         self.graph_urls = {}
+        self.puppetron = self.config.get('puppetron')
         self.graph_shortcuts = '```\n'
         for name, url in config['graph_urls'].items():
             self.graph_urls[name] = url
@@ -143,12 +144,7 @@ class SlackBot(object):
         # Create the graph in the current directory
         dir_name = os.path.dirname(os.path.abspath(__file__))
 
-        puppetron = 'http://127.0.0.1:8080/screenshot/'
-        try:  
-            puppetron = os.environ["puppetron"]
-        except KeyError: 
-            print("Please set the environment variable puppetron")
-            sys.exit(1)
+        puppetron = self.puppetron
 
         existing_files = prepare_dir(dir_name)
 
